@@ -2,6 +2,7 @@ const express = require('express');
 const logger = require('tracer').colorConsole();
 const http = require('http');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const graphqlExpress = require('express-graphql');
 const bookSchema = require('./schema/schema');
 const DB_NAME = 'GraphQLDB';
@@ -9,6 +10,9 @@ const MONGODB_URI = `mongodb://127.0.0.1:27017/${DB_NAME}`;
 
 const app = express();
 const port = 4000;
+
+// Allow CORS
+app.use(cors());
 
 // Set Headers for CORS
 app.use((req, res, next) => {
@@ -18,7 +22,6 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log(typeof graphqlExpress);
 
 app.use('/graphql', graphqlExpress.graphqlHTTP({
   schema: bookSchema,
@@ -28,9 +31,11 @@ app.use('/graphql', graphqlExpress.graphqlHTTP({
 
 app.set('port', port);
 const server = http.createServer(app);
+
 server.on('error', (error) => {
   logger.error(error);
 });
+
 server.on('listening', () => {
   logger.info('Graph QL server listening on port '+ port);
   mongoose.connect(MONGODB_URI, {
@@ -43,4 +48,5 @@ server.on('listening', () => {
   })
   .catch((error) => logger.error(error));
 });
+
 server.listen(port);
